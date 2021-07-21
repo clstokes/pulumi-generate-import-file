@@ -8,8 +8,8 @@ import (
 	"os"
 
 	tfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
-	vault "github.com/pulumi/pulumi-vault/provider"
-	// vault "github.com/pulumi/pulumi-vault/provider/v4"
+	// vault "github.com/pulumi/pulumi-vault/provider"
+	vault "github.com/pulumi/pulumi-vault/provider/v4"
 )
 
 func main() {
