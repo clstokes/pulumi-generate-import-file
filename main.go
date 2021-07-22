@@ -23,9 +23,11 @@ func main() {
 	// getTypeMapping(terraformToPulumiTypeMapping, awsProvider)
 
 	// Parse terraform state file
-	// TODO: make this an argument
-	importFromStateFile := "examples/terraform-vault/terraform.tfstate"
-	// importFromStateFile := os.Args[1]
+	if len(os.Args) == 1 {
+		fmt.Println("Missing argument - the path to a terraform state file must be provided as the first argument")
+		os.Exit(1)
+	}
+	importFromStateFile := os.Args[1]
 
 	terraformResources, err := parseTerraformState(importFromStateFile)
 	if err != nil {
@@ -42,6 +44,7 @@ func main() {
 			pResource := pulumiFileResource{
 				Type: terraformToPulumiTypeMapping[tResource.Type],
 				ID:   tResourceInstance.AttributesFlat["id"],
+				// Have to adjust the resource name due to https://github.com/pulumi/pulumi/issues/6032
 				Name: fmt.Sprintf("%s_%s%v", tResource.Type, tResource.Name, tResourceInstance.IndexKey),
 			}
 			pulumiImportMapping = append(pulumiImportMapping, pResource)
@@ -84,7 +87,6 @@ func prettyPrintJSON(object interface{}) {
 	if err != nil {
 		fmt.Println("JSON parse error: ", err)
 		os.Exit(1)
-		return
 	}
 
 	var prettyJSON bytes.Buffer
@@ -92,7 +94,6 @@ func prettyPrintJSON(object interface{}) {
 	if err != nil {
 		fmt.Println("JSON pretty indent error: ", err)
 		os.Exit(1)
-		return
 	}
 
 	fmt.Println(prettyJSON.String())
