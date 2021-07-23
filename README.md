@@ -13,5 +13,6 @@
 
 ## Important Notes
 
+- As of [889a01e](https://github.com/clstokes/pulumi-generate-import-file/commit/889a01edeff5b391b41941b4df490f46073a5211), only the Vault provider is supported, but it should be easy to handle additional providers as shown [here](https://github.com/clstokes/pulumi-generate-import-file/blob/main/main.go#L21-L23)
 - Only v4 terraform state files are supported
 - The names of the resource imports will be different than the original Terraform resource name. The `pulumi-generate-import-file` binary will add a prefix to the resource name with the resource type and add a suffix of the resource index. This is primarily due to https://github.com/pulumi/pulumi/issues/6032. [Resource aliases](https://www.pulumi.com/docs/intro/concepts/resources/#aliases) can be used to refactor these names after import.
