@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	aws "github.com/pulumi/pulumi-aws/provider/v4"
 	"github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
 	vault "github.com/pulumi/pulumi-vault/provider/v4"
 )
@@ -19,8 +20,8 @@ func main() {
 	vaultProvider := vault.Provider()
 	getTypeMapping(terraformToPulumiTypeMapping, vaultProvider)
 	// repeat the getTypeMapping() to handle additional providers - e.g.
-	// awsProvider := aws.Provider()
-	// getTypeMapping(terraformToPulumiTypeMapping, awsProvider)
+	awsProvider := aws.Provider()
+	getTypeMapping(terraformToPulumiTypeMapping, awsProvider)
 
 	// Parse terraform state file
 	if len(os.Args) == 1 {
