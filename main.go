@@ -24,14 +24,14 @@ func main() {
 
 	// Parse terraform state file
 	if len(os.Args) == 1 {
-		fmt.Println("Missing argument - the path to a terraform state file must be provided as the first argument")
+		fmt.Fprintln(os.Stderr, "Missing argument - the path to a terraform state file must be provided as the first argument")
 		os.Exit(1)
 	}
 	importFromStateFile := os.Args[1]
 
 	terraformResources, err := parseTerraformState(importFromStateFile)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		fmt.Fprintln(os.Stderr, "Error: ", err)
 		os.Exit(1)
 	}
 
@@ -41,13 +41,22 @@ func main() {
 		for _, tResourceInstance := range tResource.Instances {
 			// fmt.Println(fmt.Sprintf("Resource found [%s:%s:%v]...", tResource.Type, tResource.Name, tResourceInstance.IndexKey))
 
-			pResource := pulumiFileResource{
-				Type: terraformToPulumiTypeMapping[tResource.Type],
-				ID:   tResourceInstance.AttributesFlat["id"],
-				// Have to adjust the resource name due to https://github.com/pulumi/pulumi/issues/6032
-				Name: fmt.Sprintf("%s_%s%v", tResource.Type, tResource.Name, tResourceInstance.IndexKey),
+			foundType := terraformToPulumiTypeMapping[tResource.Type]
+			foundIndexKey := tResourceInstance.IndexKey
+			if foundIndexKey == nil {
+				foundIndexKey = 0
 			}
-			pulumiImportMapping = append(pulumiImportMapping, pResource)
+			if foundType != "" {
+				pResource := pulumiFileResource{
+					Type: foundType,
+					// Have to adjust the resource name due to https://github.com/pulumi/pulumi/issues/6032
+					Name: fmt.Sprintf("%s_%s%v", tResource.Type, tResource.Name, foundIndexKey),
+					ID:   tResourceInstance.AttributesFlat["id"],
+				}
+				pulumiImportMapping = append(pulumiImportMapping, pResource)
+			} else {
+				fmt.Fprintln(os.Stderr, fmt.Sprintf("Omitting Terraform resource [%s:%s:%v] from import output. No mapping found. Do you need to add this provider to the getTypeMapping() implementation.", tResource.Type, tResource.Name, tResourceInstance.IndexKey))
+			}
 		}
 	}
 
@@ -85,14 +94,14 @@ func parseTerraformState(importFromStateFile string) (*stateV4, error) {
 func prettyPrintJSON(object interface{}) {
 	jsonData, err := json.Marshal(object)
 	if err != nil {
-		fmt.Println("JSON parse error: ", err)
+		fmt.Fprintln(os.Stderr, "JSON parse error: ", err)
 		os.Exit(1)
 	}
 
 	var prettyJSON bytes.Buffer
 	err = json.Indent(&prettyJSON, jsonData, "", "    ")
 	if err != nil {
-		fmt.Println("JSON pretty indent error: ", err)
+		fmt.Fprintln(os.Stderr, "JSON pretty indent error: ", err)
 		os.Exit(1)
 	}
 
