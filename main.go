@@ -10,6 +10,7 @@ import (
 	aws "github.com/pulumi/pulumi-aws/provider/v4"
 	"github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
 	vault "github.com/pulumi/pulumi-vault/provider/v4"
+	"github.com/clstokes/pulumi-generate-import-file/pkg/state"
 )
 
 func main() {
@@ -66,18 +67,18 @@ func getTypeMapping(mapToAddTo map[string]string, provider tfbridge.ProviderInfo
 	}
 }
 
-func parseTerraformState(importFromStateFile string) (*stateV4, error) {
+func parseTerraformState(importFromStateFile string) (*tfstate.StateV4, error) {
 	terraformState, err := ioutil.ReadFile(importFromStateFile)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkTerraformStateVersion(terraformState)
+	err = tfstate.CheckTerraformStateVersion(terraformState)
 	if err != nil {
 		return nil, err
 	}
 
-	var terraformResources stateV4
+	var terraformResources tfstate.StateV4
 	err = json.Unmarshal(terraformState, &terraformResources)
 
 	return &terraformResources, nil
