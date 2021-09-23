@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
 	vault "github.com/pulumi/pulumi-vault/provider/v4"
@@ -42,15 +43,18 @@ func main() {
 			// fmt.Println(fmt.Sprintf("Resource found [%s:%s:%v]...", tResource.Type, tResource.Name, tResourceInstance.IndexKey))
 
 			foundType := terraformToPulumiTypeMapping[tResource.Type]
+			// use indexKey '0' if one does not exist
 			foundIndexKey := tResourceInstance.IndexKey
 			if foundIndexKey == nil {
 				foundIndexKey = 0
 			}
 			if foundType != "" {
+				// Have to adjust the resource name due to https://github.com/pulumi/pulumi/issues/6032
+				// This produces a name in the format {module_name}_{resource_type}_{resource_name}_{index}
+				pResourceVariableName := fmt.Sprintf("%s_%s_%s%v", strings.TrimPrefix(tResource.Module, "module."), tResource.Type, tResource.Name, foundIndexKey)
 				pResource := pulumiFileResource{
 					Type: foundType,
-					// Have to adjust the resource name due to https://github.com/pulumi/pulumi/issues/6032
-					Name: fmt.Sprintf("%s_%s%v", tResource.Type, tResource.Name, foundIndexKey),
+					Name: pResourceVariableName,
 					ID:   tResourceInstance.AttributesFlat["id"],
 				}
 				pulumiImportMapping = append(pulumiImportMapping, pResource)
