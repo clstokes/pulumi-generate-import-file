@@ -55,7 +55,7 @@ func main() {
 				pResource := pulumiFileResource{
 					Type: foundType,
 					Name: pResourceVariableName,
-					ID:   tResourceInstance.AttributesFlat["id"],
+					ID:   strings.ToLower(tResourceInstance.AttributesFlat["id"]),
 				}
 				pulumiImportMapping = append(pulumiImportMapping, pResource)
 			} else {
